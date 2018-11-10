@@ -10,7 +10,7 @@ BUILD_TIME=`date +%FT%T%z`
 COMMIT=`git log --pretty=format:'%h' -n 1`
 
 # Choose to install ngind with or without SputnikVM.
-WITH_SVM?=1
+WITH_SVM?=0
 
 # Provide default value of GOPATH, if it's not set in environment
 export GOPATH?=${HOME}/go
@@ -23,7 +23,7 @@ build: cmd/abigen cmd/bootnode cmd/disasm cmd/evm cmd/rlpdump cmd/ngind ## Build
 
 cmd/ngind: chainconfig ## Build a local snapshot binary version of ngind. Use WITH_SVM=1 to enable building with SputnikVM (default: WITH_SVM=1)
 ifeq (${WITH_SVM}, 1)
-	./scripts/build_sputnikvm.sh build
+	CGO_CFLAGS_ALLOW='-maes.*' ./scripts/build_sputnikvm.sh build
 else
 	mkdir -p ./${BINARY}
 	CGO_CFLAGS_ALLOW='.*' go build ${LDFLAGS} -o ${BINARY}/ngind -tags="netgo" ./cmd/ngind
@@ -47,7 +47,7 @@ cmd/disasm: ## Build a local snapshot of disasm.
 	@echo "Run \"$(BINARY)/disasm\" to launch disasm."
 
 cmd/evm: ## Build a local snapshot of evm.
-	mkdir -p ./${BINARY} && go build ${LDFLAGS} -o ${BINARY}/evm ./cmd/evm
+	mkdir -p ./${BINARY} && CGO_CFLAGS_ALLOW='-maes.*' go build ${LDFLAGS} -o ${BINARY}/evm ./cmd/evm
 	@echo "Done building evm."
 	@echo "Run \"$(BINARY)/evm\" to launch evm."
 
